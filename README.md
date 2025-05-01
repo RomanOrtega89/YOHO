@@ -18,30 +18,27 @@ YOHO es una aplicación desarrollada en Flutter que se conecta con tu smartwatch
 ## 🛠️ Tecnologías
 
 - **Frontend**: Flutter/Dart
-- **Backend**: Firebase (Firestore, Authentication)
+- **Backend**: Dart
 - **Datos del smartwatch**: Health Connect API (Google)
-- **Almacenamiento local**: Hive
 - **Análisis de datos**: TensorFlow Lite
-- **Gestión de estado**: flutter_bloc
 
 ## 📁 Estructura del proyecto
 
 ```
 yoho/
 ├── lib/
-│   ├── core/         # Utilidades, constantes, configuración
-│   ├── data/         # Fuentes de datos, repositorios
-│   ├── domain/       # Lógica de negocio, entidades
-│   ├── presentation/ # UI, pantallas, widgets
+│   ├── data/         # Fuentes de datos, lectura de datos
+│   ├── UI/           # UI, pantallas, widgets
 │   └── ml/           # Modelos de predicción
+
 ```
 
 ## ⚙️ Requisitos
 
 - Flutter 3.0+
 - Dispositivo Android con soporte para Health Connect
+- Android 9.0 en adelante
 - Smartwatch compatible
-- Cuenta de Firebase (plan Spark para desarrollo)
 
 ## 🚀 Instalación y ejecución
 
@@ -57,9 +54,7 @@ yoho/
    flutter pub get
    ```
 
-3. Configura Firebase siguiendo las instrucciones en `docs/firebase_setup.md`
-
-4. Ejecuta la aplicación:
+3. Ejecuta la aplicación:
    ```
    flutter run
    ```
@@ -67,7 +62,6 @@ yoho/
 ## 👥 Equipo de desarrollo
 
 - Desarrollador UI/UX
-- Desarrollador Backend e integración Firebase
 - Desarrollador Integración Health Connect
 - Desarrollador Modelos de Predicción
 
@@ -77,4 +71,4 @@ Proyecto en fase de desarrollo como parte de un trabajo universitario.
 
 ---
 
-_Nota: Este es un proyecto académico desarrollado para la Universidad Autonoma de Querétaro._
+_Nota: Este es un proyecto académico desarrollado para la Universidad Autónoma de Querétaro._
