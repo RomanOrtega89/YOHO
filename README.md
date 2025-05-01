@@ -37,7 +37,7 @@ yoho/
 
 - Flutter 3.0+
 - Dispositivo Android con soporte para Health Connect
-- Android 9.0 en adelante
+- Android 10.0 en adelante
 - Smartwatch compatible
 
 ## 🚀 Instalación y ejecución
