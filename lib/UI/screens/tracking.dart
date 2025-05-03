@@ -59,16 +59,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
       bool permissionsGranted = await _healthService.requestPermissions();
 
       if (permissionsGranted) {
-        // Obtener datos de las últimas 24 horas para ritmo cardíaco
-        final now = DateTime.now();
-        final yesterday = now.subtract(const Duration(days: 1));
-        _heartRateData =
-            await _healthService
-                .getHeartRateData(); // HealthService ya filtra por 7 días, podemos refinarlo aquí o en el servicio
-        // Podríamos filtrar aquí para las últimas 24h si es necesario, o ajustar getHeartRateData
-        _sleepData =
-            await _healthService
-                .getSleepData(); // HealthService ya filtra por 30 días
+        // Obtener datos para la fecha seleccionada
+        _heartRateData = await _healthService.getHeartRateDataByDate(
+          _selectedHeartRateDate,
+        );
+        _sleepData = await _healthService.getSleepDataByDate(
+          _selectedSleepDate,
+        );
 
         _processSleepData();
         _processHeartRateData();
@@ -87,199 +84,31 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
-  void _processSleepData() {
-    _totalSleep = Duration.zero;
-    _deepSleep = Duration.zero;
-    _lightSleep = Duration.zero;
-    _remSleep = Duration.zero;
-    _sleepSegments = [];
+  void _processSleepData() async {
+    try {
+      final stats = await _healthService.getSleepStatistics(_selectedSleepDate);
 
-    // Crear fechas completas con la fecha seleccionada
-    final selectedDate = _selectedSleepDate;
-    final startDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      _selectedSleepStartTime.hour,
-      _selectedSleepStartTime.minute,
-    );
+      // Convertir a formato esperado con protección
+      _totalSleep = Duration(minutes: stats['totalSleepMinutes'] ?? 0);
+      _deepSleep = Duration(minutes: stats['deepSleepMinutes'] ?? 0);
+      _lightSleep = Duration(minutes: stats['lightSleepMinutes'] ?? 0);
+      _remSleep = Duration(minutes: stats['remSleepMinutes'] ?? 0);
 
-    // Si la hora de fin es anterior a la de inicio, asumimos que es del día siguiente
-    final endDay =
-        _selectedSleepEndTime.hour < _selectedSleepStartTime.hour
-            ? selectedDate.add(const Duration(days: 1))
-            : selectedDate;
+      // Obtener segmentos para visualización
+      _sleepSegments = _createSleepSegmentsFromData(_sleepData);
 
-    final endDateTime = DateTime(
-      endDay.year,
-      endDay.month,
-      endDay.day,
-      _selectedSleepEndTime.hour,
-      _selectedSleepEndTime.minute,
-    );
-
-    // Verificar que el período sea de al menos 2 horas
-    final selectedDuration = endDateTime.difference(startDateTime);
-    if (selectedDuration.inHours < 2) {
-      return;
+      if (mounted) setState(() {});
+    } catch (e) {
+      print("Error al procesar datos de sueño: $e");
+      _error = 'Error al procesar datos de sueño: $e';
+      if (mounted) setState(() {});
     }
-
-    // Filtrar sesiones de sueño
-    List<HealthDataPoint> sleepSessions =
-        _sleepData
-            .where((p) => p.type == HealthDataType.SLEEP_SESSION)
-            .toList();
-
-    sleepSessions.sort((a, b) => b.dateTo.compareTo(a.dateTo));
-
-    if (sleepSessions.isNotEmpty) {
-      // Buscar sesiones que coincidan con nuestro rango
-      final relevantSessions =
-          sleepSessions.where((session) {
-            return (session.dateFrom.isBefore(endDateTime) &&
-                session.dateTo.isAfter(startDateTime));
-          }).toList();
-
-      if (relevantSessions.isEmpty) return;
-
-      // Usar la sesión más relevante
-      var bestSession = relevantSessions.first;
-      var bestOverlap = Duration.zero;
-
-      for (var session in relevantSessions) {
-        final sessionStart =
-            session.dateFrom.isAfter(startDateTime)
-                ? session.dateFrom
-                : startDateTime;
-        final sessionEnd =
-            session.dateTo.isBefore(endDateTime) ? session.dateTo : endDateTime;
-        final overlap = sessionEnd.difference(sessionStart);
-
-        if (overlap > bestOverlap) {
-          bestOverlap = overlap;
-          bestSession = session;
-        }
-      }
-
-      // Establecer el tiempo total de sueño según la sesión
-      _totalSleep = bestSession.dateTo.difference(bestSession.dateFrom);
-
-      // Crear un mapa para rastrear las fases de sueño para cada minuto
-      Map<DateTime, SleepStage> sleepByMinute = {};
-      DateTime currentTime = bestSession.dateFrom;
-      while (currentTime.isBefore(bestSession.dateTo)) {
-        sleepByMinute[currentTime] = SleepStage.unknown;
-        currentTime = currentTime.add(const Duration(minutes: 1));
-      }
-
-      // Filtrar datos de fases de sueño
-      final relevantSleepData =
-          _sleepData.where((p) {
-            return p.type != HealthDataType.SLEEP_SESSION &&
-                !p.dateFrom.isBefore(bestSession.dateFrom) &&
-                !p.dateTo.isAfter(bestSession.dateTo);
-          }).toList();
-
-      relevantSleepData.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-
-      // Agregar cada segmento a la lista pero sin superponer tiempos
-      for (var point in relevantSleepData) {
-        DateTime segmentStart = point.dateFrom;
-        DateTime segmentEnd = point.dateTo;
-        SleepStage stage = SleepStage.unknown;
-
-        switch (point.type) {
-          case HealthDataType.SLEEP_DEEP:
-            stage = SleepStage.deep;
-            break;
-          case HealthDataType.SLEEP_LIGHT:
-            stage = SleepStage.light;
-            break;
-          case HealthDataType.SLEEP_REM:
-            stage = SleepStage.rem;
-            break;
-          case HealthDataType.SLEEP_AWAKE:
-            stage = SleepStage.awake;
-            break;
-          default:
-            continue;
-        }
-
-        if (stage != SleepStage.unknown) {
-          // Marcar cada minuto de este segmento con la fase correspondiente
-          DateTime minute = DateTime(
-            segmentStart.year,
-            segmentStart.month,
-            segmentStart.day,
-            segmentStart.hour,
-            segmentStart.minute,
-          );
-
-          while (minute.isBefore(segmentEnd)) {
-            if (sleepByMinute.containsKey(minute)) {
-              sleepByMinute[minute] = stage;
-            }
-            minute = minute.add(const Duration(minutes: 1));
-          }
-
-          // Agregar el segmento para visualización
-          _sleepSegments.add(SleepSegment(segmentStart, segmentEnd, stage));
-        }
-      }
-
-      // Contar minutos en cada etapa sin duplicación
-      int deepMinutes = 0;
-      int lightMinutes = 0;
-      int remMinutes = 0;
-
-      sleepByMinute.forEach((time, stage) {
-        switch (stage) {
-          case SleepStage.deep:
-            deepMinutes++;
-            break;
-          case SleepStage.light:
-            lightMinutes++;
-            break;
-          case SleepStage.rem:
-            remMinutes++;
-            break;
-          default:
-            break;
-        }
-      });
-
-      // Establecer duraciones correctas
-      _deepSleep = Duration(minutes: deepMinutes);
-      _lightSleep = Duration(minutes: lightMinutes);
-      _remSleep = Duration(minutes: remMinutes);
-    }
-
-    _sleepSegments.sort((a, b) => a.startTime.compareTo(b.startTime));
   }
 
   void _processHeartRateData() {
     List<HealthDataPoint> hrPoints =
         _heartRateData
             .where((p) => p.type == HealthDataType.HEART_RATE)
-            .toList();
-
-    // Filtrar por la fecha seleccionada
-    final startOfDay = DateTime(
-      _selectedHeartRateDate.year,
-      _selectedHeartRateDate.month,
-      _selectedHeartRateDate.day,
-    );
-    final endOfDay = startOfDay
-        .add(const Duration(days: 1))
-        .subtract(const Duration(milliseconds: 1));
-
-    hrPoints =
-        hrPoints
-            .where(
-              (point) =>
-                  point.dateFrom.isAfter(startOfDay) &&
-                  point.dateFrom.isBefore(endOfDay),
-            )
             .toList();
 
     hrPoints.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
@@ -315,30 +144,21 @@ class _TrackingScreenState extends State<TrackingScreen> {
     _avgHr = (sum / hrPoints.length).round();
 
     // Obtener Resting Heart Rate
-    final restingHrPoint = _heartRateData.firstWhere(
-      (p) => p.type == HealthDataType.RESTING_HEART_RATE,
-      orElse:
-          () => HealthDataPoint(
-            uuid: 'dummy-uuid',
-            value: NumericHealthValue(numericValue: 0),
-            type: HealthDataType.RESTING_HEART_RATE,
-            unit: HealthDataUnit.BEATS_PER_MINUTE,
-            dateFrom: DateTime.now(),
-            dateTo: DateTime.now(),
-            sourcePlatform:
-                HealthPlatformType
-                    .googleHealthConnect, // Use lowercase 'android'
-            sourceDeviceId: '',
-            sourceId: 'dummy-source-id',
-            sourceName: 'Dummy Source',
-          ),
-    );
+    HealthDataPoint? restingHrPoint;
+    try {
+      restingHrPoint = _heartRateData.firstWhere(
+        (p) => p.type == HealthDataType.RESTING_HEART_RATE,
+      );
+    } catch (e) {
+      // No encontró datos de ritmo cardíaco en reposo
+      restingHrPoint = null;
+    }
 
-    if ((restingHrPoint.value as NumericHealthValue).numericValue > 0) {
+    if (restingHrPoint != null) {
       _restingHr =
           (restingHrPoint.value as NumericHealthValue).numericValue.toInt();
     } else {
-      _restingHr = null; // O algún valor por defecto como "--"
+      _restingHr = null; // UI mostrará "No disponible"
     }
   }
 
@@ -638,24 +458,21 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       'Profundo',
                       deepSleepColor,
                       _formatDuration(_deepSleep),
-                      (deepMinutes / totalMinutes * 100).toStringAsFixed(0) +
-                          '%',
+                      '${(deepMinutes / totalMinutes * 100).toStringAsFixed(0)}%',
                     ),
                     SizedBox(height: 12),
                     _buildSleepSummaryLegend(
                       'Ligero',
                       lightSleepColor,
                       _formatDuration(_lightSleep),
-                      (lightMinutes / totalMinutes * 100).toStringAsFixed(0) +
-                          '%',
+                      '${(lightMinutes / totalMinutes * 100).toStringAsFixed(0)}%',
                     ),
                     SizedBox(height: 12),
                     _buildSleepSummaryLegend(
                       'REM',
                       remSleepColor,
                       _formatDuration(_remSleep),
-                      (remMinutes / totalMinutes * 100).toStringAsFixed(0) +
-                          '%',
+                      '${(remMinutes / totalMinutes * 100).toStringAsFixed(0)}%',
                     ),
                   ],
                 ),
@@ -1170,7 +987,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     if (date != null) {
                       setState(() {
                         _selectedHeartRateDate = date;
-                        _processHeartRateData();
+                        // Cargar nuevos datos para la fecha seleccionada
+                        _loadHeartRateDataForSelectedDate();
                       });
                     }
                   },
@@ -1347,7 +1165,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   // Formatear la hora para las etiquetas específicas
                   if (dateTime.hour % 6 == 0 || dateTime.hour == 0) {
                     return SideTitleWidget(
-                      axisSide: meta.axisSide,
+                      meta: meta,
                       space: 8.0,
                       child: Text(
                         DateFormat('HH:mm').format(dateTime),
@@ -1464,6 +1282,114 @@ class _TrackingScreenState extends State<TrackingScreen> {
         ),
       ],
     );
+  }
+
+  List<SleepSegment> _createSleepSegmentsFromData(
+    List<HealthDataPoint> sleepData,
+  ) {
+    // Si no hay datos, devolver lista vacía
+    if (sleepData.isEmpty) {
+      return [];
+    }
+
+    // Pre-filtrar y ordenar datos una sola vez
+    final relevantData =
+        sleepData
+            .where(
+              (p) =>
+                  p.type == HealthDataType.SLEEP_DEEP ||
+                  p.type == HealthDataType.SLEEP_LIGHT ||
+                  p.type == HealthDataType.SLEEP_REM ||
+                  p.type == HealthDataType.SLEEP_AWAKE,
+            )
+            .toList()
+          ..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+
+    // Lista para almacenar segmentos procesados
+    List<SleepSegment> segments = [];
+
+    // Si no hay datos relevantes, devolver lista vacía
+    if (relevantData.isEmpty) {
+      return segments;
+    }
+
+    // Procesar cada punto de datos en fase de sueño
+    for (var point in relevantData) {
+      SleepStage stage = SleepStage.unknown;
+
+      switch (point.type) {
+        case HealthDataType.SLEEP_DEEP:
+          stage = SleepStage.deep;
+          break;
+        case HealthDataType.SLEEP_LIGHT:
+          stage = SleepStage.light;
+          break;
+        case HealthDataType.SLEEP_REM:
+          stage = SleepStage.rem;
+          break;
+        case HealthDataType.SLEEP_AWAKE:
+          stage = SleepStage.awake;
+          break;
+        default:
+          continue;
+      }
+
+      // Añadir segmento solo si la duración es válida
+      if (point.dateFrom.isBefore(point.dateTo)) {
+        segments.add(SleepSegment(point.dateFrom, point.dateTo, stage));
+      }
+    }
+
+    // Opcional: optimizar combinando segmentos adyacentes del mismo tipo
+    if (segments.length > 1) {
+      List<SleepSegment> optimizedSegments = [segments.first];
+
+      for (int i = 1; i < segments.length; i++) {
+        SleepSegment current = segments[i];
+        SleepSegment previous = optimizedSegments.last;
+
+        // Si son del mismo tipo y contiguos (o con pequeña diferencia), combinar
+        if (current.stage == previous.stage &&
+            current.startTime.difference(previous.endTime).inMinutes < 5) {
+          // Reemplazar el último segmento con uno combinado
+          optimizedSegments.removeLast();
+          optimizedSegments.add(
+            SleepSegment(previous.startTime, current.endTime, current.stage),
+          );
+        } else {
+          optimizedSegments.add(current);
+        }
+      }
+
+      return optimizedSegments;
+    }
+
+    return segments;
+  }
+
+  Future<void> _loadHeartRateDataForSelectedDate() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Obtener datos para la fecha seleccionada
+      _heartRateData = await _healthService.getHeartRateDataByDate(
+        _selectedHeartRateDate,
+      );
+
+      // Procesar los datos obtenidos
+      _processHeartRateData();
+    } catch (e) {
+      print("Error al cargar datos de ritmo cardíaco: $e");
+      setState(() {
+        _error = 'Error al cargar datos de ritmo cardíaco: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'UI/screens/tracking.dart'; // Asegúrate que la ruta es correcta
-import 'UI/screens/statistics.dart'; // Asegúrate que la ruta es correcta
+import 'UI/screens/tracking.dart';
+import 'UI/screens/statistics.dart';
+import 'UI/screens/learn.dart';
+import 'UI/screens/settings.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,44 +14,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'YOHO Health Tracker', // Puedes cambiar el título
+      title: 'YOHO: sueño y salud',
       theme: ThemeData(
-        brightness: Brightness.dark, // Tema oscuro global
-        primarySwatch: Colors.blue, // Un color primario base
-        scaffoldBackgroundColor: Colors.black, // Fondo negro por defecto
-        cardColor: Colors.grey[900], // Color de las tarjetas
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.black,
+        cardColor: Colors.grey[900],
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.grey[900], // Color de AppBar
-          elevation: 0, // Sin sombra
+          backgroundColor: Colors.grey[900],
+          elevation: 0,
           titleTextStyle: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-          ), // Color de iconos en AppBar
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: Colors.grey[900], // Fondo de la barra de navegación
-          selectedItemColor: Colors.white, // Color del ítem seleccionado
-          unselectedItemColor:
-              Colors.grey[600], // Color de ítems no seleccionados
-          showUnselectedLabels:
-              false, // Opcional: ocultar etiquetas no seleccionadas
+          backgroundColor: Colors.grey[900],
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey[600],
+          showUnselectedLabels: false,
           showSelectedLabels: true,
         ),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue, // Semilla para generar otros colores
-          brightness: Brightness.dark, // Asegura que el esquema sea oscuro
-          // background: Colors.black, // Eliminado: Ya cubierto por scaffoldBackgroundColor
-          surface:
-              Colors.grey[900], // Color de superficie (ej. tarjetas, appbar)
-        ).copyWith(secondary: Colors.blueAccent), // Color secundario/acento
-        useMaterial3: true, // Habilitar Material 3 si lo deseas
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+          surface: Colors.grey[900],
+        ).copyWith(secondary: Colors.blueAccent),
+        useMaterial3: true,
       ),
-      debugShowCheckedModeBanner: false, // Ocultar banner de debug
-      home: const HomeScreen(), // Iniciar con nuestra pantalla principal
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
     );
   }
 }
@@ -62,13 +58,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0; // Índice de la pantalla actual
+  int _selectedIndex = 0;
 
-  // Lista de pantallas a mostrar
-  static final List<Widget> _widgetOptions = <Widget>[
-    // Corrección: 'const' eliminado
-    TrackingScreen(),
-    StatisticsScreen(),
+  // Lista actualizada de pantallas incluyendo configuración
+  static final List<Widget> _screenOptions = <Widget>[
+    const TrackingScreen(),
+    const StatisticsScreen(),
+    const LearnScreen(),
+    const SettingsScreen(), // Nueva pantalla
   ];
 
   void _onItemTapped(int index) {
@@ -80,18 +77,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // El AppBar se manejará dentro de cada pantalla si es necesario
-      // appBar: AppBar(title: const Text('YOHO')), // O un AppBar global aquí
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: Center(child: _screenOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart), // O un icono más específico
-            label: 'Tracking',
+            icon: Icon(Icons.show_chart),
+            label: 'Seguimiento',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart), // O Icons.analytics
+            icon: Icon(Icons.bar_chart),
             label: 'Estadísticas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.nights_stay),
+            label: 'Aprender',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Configuración',
           ),
         ],
         currentIndex: _selectedIndex,

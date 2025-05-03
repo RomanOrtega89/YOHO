@@ -47,6 +47,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   static const Color deepSleepColor = Color(0xFF293A8B); // Azul oscuro
   static const Color remSleepColor = Color(0xFF76D1FF); // Azul muy claro/cian
 
+  // Añadir bandera para datos aproximados
+  bool isDeepSleepApproximated = true;
+  bool isLightSleepApproximated = true;
+  bool isRemSleepApproximated = true;
+
   @override
   void initState() {
     super.initState();
@@ -61,8 +66,35 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     });
 
     try {
-      List<HealthDataPoint> sleepData = await _healthService.getSleepData();
-      _processSleepData(sleepData);
+      _dailySleepData = [];
+      isDeepSleepApproximated = true;
+      isLightSleepApproximated = true;
+      isRemSleepApproximated = true;
+
+      // Obtener datos para cada día de la semana seleccionada
+      for (int i = 0; i < 7; i++) {
+        final date = _selectedWeekStart.add(Duration(days: i));
+        final stats = await _healthService.getSleepStatistics(date);
+
+        // Actualizar banderas si hay datos
+        if (stats['deepSleepMinutes'] > 0) isDeepSleepApproximated = false;
+        if (stats['lightSleepMinutes'] > 0) isLightSleepApproximated = false;
+        if (stats['remSleepMinutes'] > 0) isRemSleepApproximated = false;
+
+        // Solo agregar si hay datos útiles
+        if (stats['totalSleepMinutes'] > 0) {
+          _dailySleepData.add(
+            DailySleepData(
+              date: date,
+              totalHours: stats['totalSleepMinutes'] / 60.0,
+              deepHours: stats['deepSleepMinutes'] / 60.0,
+              lightHours: stats['lightSleepMinutes'] / 60.0,
+              remHours: stats['remSleepMinutes'] / 60.0,
+            ),
+          );
+        }
+      }
+
       _generateAvailableWeeks();
 
       _selectedWeekIndex = _availableWeeks.indexWhere(
@@ -144,9 +176,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
         // Si tenemos datos específicos, los usamos
         if (phaseDurations.keys.isNotEmpty) {
-          deepHours = phaseDurations[HealthDataType.SLEEP_DEEP] ?? deepHours;
-          lightHours = phaseDurations[HealthDataType.SLEEP_LIGHT] ?? lightHours;
-          remHours = phaseDurations[HealthDataType.SLEEP_REM] ?? remHours;
+          // Actualizar solo si hay datos reales
+          if (phaseDurations.containsKey(HealthDataType.SLEEP_DEEP)) {
+            deepHours = phaseDurations[HealthDataType.SLEEP_DEEP]!;
+            isDeepSleepApproximated = false;
+          }
+          if (phaseDurations.containsKey(HealthDataType.SLEEP_LIGHT)) {
+            lightHours = phaseDurations[HealthDataType.SLEEP_LIGHT]!;
+            isLightSleepApproximated = false;
+          }
+          if (phaseDurations.containsKey(HealthDataType.SLEEP_REM)) {
+            remHours = phaseDurations[HealthDataType.SLEEP_REM]!;
+            isRemSleepApproximated = false;
+          }
         }
       }
 
@@ -176,24 +218,25 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   void _generateAvailableWeeks() {
-    if (_dailySleepData.isEmpty) {
-      _availableWeeks = [_getStartOfWeek(DateTime.now())];
-      return;
-    }
+    // Generar últimas 4 semanas por defecto
+    final now = DateTime.now();
+    _availableWeeks = List.generate(4, (index) {
+      return _getStartOfWeek(now.subtract(Duration(days: 7 * index)));
+    });
 
-    // Crear un conjunto de semanas únicas desde los datos
-    final Set<String> weekKeys = {};
-    for (var data in _dailySleepData) {
-      final weekStart = _getStartOfWeek(data.date);
-      weekKeys.add(DateFormat('yyyy-MM-dd').format(weekStart));
-    }
+    // Añadir semanas con datos si existen y no están en la lista
+    if (_dailySleepData.isNotEmpty) {
+      for (var data in _dailySleepData) {
+        final weekStart = _getStartOfWeek(data.date);
+        final weekExists = _availableWeeks.any((w) => _isSameDay(w, weekStart));
 
-    // Convertir a lista de DateTime
-    _availableWeeks =
-        weekKeys.map((key) => DateFormat('yyyy-MM-dd').parse(key)).toList()
-          ..sort(
-            (a, b) => b.compareTo(a),
-          ); // Ordenar descendente (más reciente primero)
+        if (!weekExists) {
+          _availableWeeks.add(weekStart);
+        }
+      }
+      // Ordenar las semanas de más reciente a más antigua
+      _availableWeeks.sort((a, b) => b.compareTo(a));
+    }
   }
 
   void _selectPreviousWeek() {
@@ -459,7 +502,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 String dayNum = DateFormat('d').format(date);
 
                 return SideTitleWidget(
-                  axisSide: meta.axisSide,
+                  meta: meta,
                   space: 4,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -587,7 +630,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       );
     }
 
-    // Calcular promedios mensuales
+    // Calcular promedios mensuales con protección contra división por cero
     double totalSleepHours = 0;
     double totalDeepHours = 0;
     double totalLightHours = 0;
@@ -600,15 +643,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       totalRemHours += data.remHours;
     }
 
-    final avgSleepHours = totalSleepHours / monthlyData.length;
-    final avgDeepHours = totalDeepHours / monthlyData.length;
-    final avgLightHours = totalLightHours / monthlyData.length;
-    final avgRemHours = totalRemHours / monthlyData.length;
+    final length =
+        monthlyData.isNotEmpty
+            ? monthlyData.length
+            : 1; // Evitar división por cero
+    final avgSleepHours = totalSleepHours / length;
+    final avgDeepHours = totalDeepHours / length;
+    final avgLightHours = totalLightHours / length;
+    final avgRemHours = totalRemHours / length;
 
-    // Calcular porcentajes
-    final deepPercent = avgDeepHours / avgSleepHours;
-    final lightPercent = avgLightHours / avgSleepHours;
-    final remPercent = avgRemHours / avgSleepHours;
+    // Calcular porcentajes con protección
+    final deepPercent = avgSleepHours > 0 ? avgDeepHours / avgSleepHours : 0;
+    final lightPercent = avgSleepHours > 0 ? avgLightHours / avgSleepHours : 0;
+    final remPercent = avgSleepHours > 0 ? avgRemHours / avgSleepHours : 0;
 
     return Column(
       children: [
@@ -628,7 +675,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         const SizedBox(height: 12),
 
         // Gráfico simplificado
-        Container(
+        SizedBox(
           height: 120,
           child: Row(
             children: [
@@ -725,7 +772,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
             Text(
-              '${hours.toStringAsFixed(1)}h',
+              "${isDeepSleepApproximated ? '~' : ''}${hours.toStringAsFixed(1)}h",
               style: TextStyle(color: Colors.grey[400], fontSize: 11),
             ),
           ],
@@ -747,5 +794,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[400])),
       ],
     );
+  }
+
+  Future<DailySleepData?> _getSleepDataForDay(DateTime date) async {
+    final stats = await _healthService.getSleepStatistics(date);
+
+    if (stats['totalSleepMinutes'] > 0) {
+      return DailySleepData(
+        date: date,
+        totalHours: stats['totalSleepMinutes'] / 60.0,
+        deepHours: stats['deepSleepMinutes'] / 60.0,
+        lightHours: stats['lightSleepMinutes'] / 60.0,
+        remHours: stats['remSleepMinutes'] / 60.0,
+      );
+    }
+
+    return null;
   }
 }

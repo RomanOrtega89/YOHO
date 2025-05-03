@@ -1,0 +1,122 @@
+POLÍTICA DE PRIVACIDAD 
+
+Última actualización: 1 de mayo de 2025
+
+1. INTRODUCCIÓN
+
+Bienvenido a nuestra aplicación de monitoreo del sueño ("Sleep Diary"). Nos comprometemos a proteger su privacidad y datos personales. Esta Política de Privacidad explica cómo recopilamos, utilizamos, procesamos, almacenamos y protegemos su información cuando utiliza nuestra Aplicación.
+Al instalar, acceder o utilizar nuestra Aplicación, usted acepta las prácticas descritas en esta Política de Privacidad. Si no está de acuerdo con esta política, por favor no utilice nuestra Aplicación.
+
+2. INFORMACIÓN QUE RECOPILAMOS
+
+2.1 Información proporcionada por usted:
+
+Información de registro (Nombre, Género, Edad)
+
+2.2 Información recopilada automáticamente:
+
+Datos de monitoreo del sueño (duración, fases del sueño, interrupciones)
+Patrones de sueño y actividad nocturna
+Datos de sensores del dispositivo durante el sueño (movimiento, sonido, ritmo cardíaco)
+Información técnica del dispositivo (tipo de dispositivo, sistema operativo, identificadores únicos)
+Datos de uso de la aplicación (funciones utilizadas, tiempo de uso)
+
+3. CÓMO UTILIZAMOS SU INFORMACIÓN
+
+Utilizamos la información recopilada para:
+
+Proporcionar y personalizar nuestros servicios de monitoreo del sueño
+Analizar sus patrones de sueño y ofrecer recomendaciones personalizadas
+Generar predicciones de salud basadas en sus datos de sueño mediante nuestro modelo de aprendizaje automático
+Mejorar nuestra Aplicación y desarrollar nuevas funcionalidades
+Enviarle notificaciones, alertas y consejos sobre hábitos de sueño
+Responder a sus consultas o solicitudes de soporte
+Cumplir con obligaciones legales y normativas
+
+4. BASE LEGAL PARA EL PROCESAMIENTO
+
+Procesamos sus datos personales con las siguientes bases legales:
+
+Ejecución del contrato para proporcionar los servicios de la Aplicación
+Su consentimiento explícito, especialmente para datos de salud y predicciones médicas
+Nuestros intereses legítimos, como la mejora de nuestros servicios
+Cumplimiento de obligaciones legales
+
+5. PREDICCIONES DE SALUD Y MODELO DE APRENDIZAJE AUTOMÁTICO
+
+Nuestra Aplicación incluye un modelo de aprendizaje automático que:
+
+Analiza sus datos de sueño para identificar posibles riesgos de salud
+Genera predicciones sobre condiciones médicas potenciales relacionadas con patrones de sueño inadecuados
+Ofrece recomendaciones personalizadas para mejorar la calidad del sueño
+
+Importante: Estas predicciones son únicamente informativas y no constituyen un consejo, diagnóstico o tratamiento médico. Consulte siempre a un profesional de la salud cualificado antes de tomar decisiones sobre su salud.
+
+6. COMPARTIENDO SU INFORMACIÓN
+
+Podemos compartir su información en las siguientes circunstancias:
+
+Con proveedores de servicios que nos ayudan a operar la Aplicación (almacenamiento en la nube, análisis de datos)
+Con profesionales de la salud, solo con su consentimiento explícito
+Para cumplir con obligaciones legales, normativas o solicitudes gubernamentales
+En caso de fusión, adquisición o venta de activos, con las garantías adecuadas
+En formato agregado y anonimizado para investigación y mejora de algoritmos
+
+No vendemos sus datos personales a terceros.
+
+7. SEGURIDAD DE LOS DATOS
+
+Implementamos medidas técnicas y organizativas apropiadas para proteger sus datos personales, incluyendo:
+
+Cifrado de datos en tránsito y en reposo
+Controles de acceso estrictos para empleados y proveedores
+Procedimientos regulares de pruebas de seguridad
+Planes de respuesta a incidentes
+Formación en privacidad y seguridad para nuestro personal
+
+8. RETENCIÓN DE DATOS
+
+Conservamos sus datos personales mientras mantenga una cuenta activa y posteriormente:
+
+Datos de cuenta: hasta 12 meses después de la última actividad
+Datos de sueño: hasta 36 meses para permitir análisis de tendencias a largo plazo
+Datos anónimos agregados: indefinidamente para fines de investigación y mejora
+
+Puede solicitar la eliminación de sus datos en cualquier momento.
+
+9. SUS DERECHOS
+
+Dependiendo de su ubicación, puede tener los siguientes derechos:
+
+Acceder a sus datos personales
+Corregir datos inexactos
+Eliminar sus datos (derecho al olvido)
+Restringir u oponerse al procesamiento
+Portabilidad de datos
+Retirar el consentimiento en cualquier momento
+Presentar una reclamación ante una autoridad de protección de datos
+
+Para ejercer estos derechos, contáctenos a través de los medios proporcionados en la sección "Contáctenos".
+
+10. TRANSFERENCIAS INTERNACIONALES DE DATOS
+
+Si transferimos sus datos fuera de su país o región, garantizamos un nivel adecuado de protección mediante:
+
+Transferencias a países con decisiones de adecuación
+Cláusulas contractuales estándar aprobadas
+Otros mecanismos legales de transferencia
+
+11. PRIVACIDAD DE LOS NIÑOS
+
+Nuestra Aplicación no está dirigida a menores de 16 años. No recopilamos intencionadamente información de niños. Si cree que hemos recopilado datos de un niño, contáctenos inmediatamente.
+
+12. CAMBIOS A ESTA POLÍTICA
+
+Podemos actualizar esta Política de Privacidad periódicamente. Le notificaremos cualquier cambio material mediante un aviso en la Aplicación o por correo electrónico. La continuación del uso de la Aplicación después de dichos cambios constituirá su aceptación de los mismos.
+
+13. CONTÁCTENOS
+
+Si tiene preguntas sobre esta Política de Privacidad o sobre cómo manejamos sus datos personales, contáctenos:
+
+Correo electrónico: privacy@sleepdiary.com
+Formulario de contacto: www.sleepdiary.com
