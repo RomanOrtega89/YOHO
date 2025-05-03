@@ -10,8 +10,8 @@ YOHO es una aplicación desarrollada en Flutter que se conecta con tu smartwatch
 
 - Monitorización de patrones de sueño mediante smartwatch
 - Dashboard con visualización de métricas clave
-- Análisis predictivo de calidad del sueño
-- Evaluación de riesgos de salud basada en patrones de sueño
+- Análisis predictivo de calidad del sueño (en fase de implementación)
+- Evaluación de riesgos de salud basada en patrones de sueño (en fase de implementación)
 - Recomendaciones personalizadas para mejorar la calidad del descanso
 - Interfaz minimalista y fácil de usar
 
@@ -37,7 +37,7 @@ yoho/
 
 - Flutter 3.0+
 - Dispositivo Android con soporte para Health Connect
-- Android 10.0 en adelante
+- Android 9.0 en adelante
 - Smartwatch compatible
 
 ## 🚀 Instalación y ejecución
@@ -61,9 +61,8 @@ yoho/
 
 ## 👥 Equipo de desarrollo
 
-- Desarrollador UI/UX
-- Desarrollador Integración Health Connect
-- Desarrollador Modelos de Predicción
+- Román Ortega Muñoz
+- René Tellez Carmona
 
 ## 📊 Estado del proyecto
 
