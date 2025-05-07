@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const TrackingScreen(),
     const StatisticsScreen(),
     const LearnScreen(),
-    const SettingsScreen(), // Nueva pantalla
+    const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {

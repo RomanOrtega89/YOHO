@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:intl/intl.dart';
-import 'package:fl_chart/fl_chart.dart'; // Asegúrate de añadir esta dependencia
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import '../../data/health_connect/health_connect.dart'; // Ajusta la ruta si es necesario
+import '../../data/health_connect/health_connect.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -186,7 +186,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    // Colores basados en las imágenes (aproximados)
     const Color deepSleepColor = Color(0xFF293A8B); // Azul oscuro
     const Color lightSleepColor = Color(0xFF5499FF); // Azul claro
     const Color remSleepColor = Color(0xFF76D1FF); // Azul muy claro/cian
@@ -194,8 +193,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     const Color hrColor = Color(0xFFF44336); // Rojo para HR
 
     return Scaffold(
-      // Podrías querer un AppBar aquí
-      // appBar: AppBar(title: const Text('Tracking')),
+      appBar: AppBar(title: const Text('Tracking')),
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -248,7 +246,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
     return Card(
       elevation: 2,
-      color: Colors.grey[900], // Fondo oscuro como en la imagen
+      color: Colors.grey[900],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -276,7 +274,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   ],
                 ),
                 Text(
-                  'Fuente: Redmi Watch 3 Active', // Esto debería ser dinámico si es posible
+                  'Fuente: Redmi Watch 3 Active', // Esto debería ser dinámico
                   style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                 ),
               ],
@@ -372,10 +370,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle, // O BoxShape.rectangle
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[400])),
@@ -433,7 +428,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                         remSleepColor: remSleepColor,
                       ),
                     ),
-                    // Agregar texto en el centro (opcional)
+
                     Text(
                       '${(_totalSleep.inHours)}h\n${_totalSleep.inMinutes.remainder(60)}min',
                       style: TextStyle(
