@@ -33,6 +33,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   int? _avgHr;
   List<FlSpot> _hrSpots = [];
 
+  // Variables para almacenar datos procesados de pasos
+  int? _totalSteps;
+
   // En la clase _TrackingScreenState, añade estas variables
   DateTime _selectedSleepDate = DateTime.now().subtract(
     const Duration(days: 1),
@@ -42,6 +45,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   // Añadir esta variable para la fecha del ritmo cardíaco
   DateTime _selectedHeartRateDate = DateTime.now();
+
+  // Añadir esta variable para la fecha de los pasos
+  DateTime _selectedStepsDate = DateTime.now();
 
   @override
   void initState() {
@@ -69,6 +75,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
         _processSleepData();
         _processHeartRateData();
+        _processStepsData();
       } else {
         _error = 'Permisos no concedidos.';
       }
@@ -162,6 +169,25 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
+  Future<void> _processStepsData() async {
+    try {
+      final stats = await _healthService.getStepsStatistics(_selectedStepsDate);
+      if (mounted) {
+        setState(() {
+          _totalSteps = stats['totalSteps'] as int?;
+        });
+      }
+    } catch (e) {
+      print("Error al procesar datos de pasos: $e");
+      if (mounted) {
+        setState(() {
+          _error = 'Error al procesar datos de pasos: $e';
+          _totalSteps = null;
+        });
+      }
+    }
+  }
+
   String _formatDuration(Duration duration) {
     if (duration == Duration.zero) return "0 min";
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -191,6 +217,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     const Color remSleepColor = Color(0xFF76D1FF); // Azul muy claro/cian
     const Color awakeColor = Colors.grey; // Para posible estado despierto
     const Color hrColor = Color(0xFFF44336); // Rojo para HR
+    const Color stepsColor = Colors.orange; // Naranja para Pasos
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tracking')),
@@ -220,6 +247,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     const SizedBox(height: 32),
                     // Sección Ritmo Cardíaco
                     _buildHeartRateSection(context, hrColor),
+                    const SizedBox(height: 32),
+                    // Sección Pasos
+                    _buildStepsSection(context, stepsColor),
                   ],
                 ),
               ),
@@ -1384,6 +1414,143 @@ class _TrackingScreenState extends State<TrackingScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Widget _buildStepsSection(BuildContext context, Color stepsColor) {
+    final NumberFormat numberFormatter = NumberFormat.decimalPattern('es_ES');
+
+    return Card(
+      elevation: 2,
+      color: Colors.grey[900],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.directions_walk, color: stepsColor),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Pasos',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton.icon(
+                  icon: const Icon(
+                    Icons.calendar_today,
+                    color: Colors.white70,
+                    size: 18,
+                  ),
+                  label: Text(
+                    DateFormat('dd/MM/yyyy').format(_selectedStepsDate),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedStepsDate,
+                      firstDate: DateTime.now().subtract(
+                        const Duration(days: 30),
+                      ),
+                      lastDate: DateTime.now(),
+                      builder: (context, child) {
+                        return Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: ColorScheme.dark(
+                              primary: stepsColor,
+                              onSurface: Colors.white,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (date != null) {
+                      setState(() {
+                        _selectedStepsDate = date;
+                        _loadStepsDataForSelectedDate();
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    _totalSteps != null
+                        ? numberFormatter.format(_totalSteps)
+                        : '--',
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Text(
+                    'pasos hoy',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Aquí podrías añadir un gráfico de barras simple para pasos si lo deseas en el futuro
+            // Por ahora, solo mostramos el total.
+            // Ejemplo:
+            if (_totalSteps != null && _totalSteps! > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: LinearProgressIndicator(
+                  value: (_totalSteps! / 10000).clamp(
+                    0.0,
+                    1.0,
+                  ), // Suponiendo un objetivo de 10000 pasos
+                  backgroundColor: Colors.grey[700],
+                  valueColor: AlwaysStoppedAnimation<Color>(stepsColor),
+                  minHeight: 10,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadStepsDataForSelectedDate() async {
+    setState(() {
+      _isLoading =
+          true; // Puedes usar un indicador de carga específico si prefieres
+    });
+
+    try {
+      await _processStepsData(); // Reutiliza el método de procesamiento
+    } catch (e) {
+      print("Error al cargar datos de pasos: $e");
+      if (mounted) {
+        setState(() {
+          _error = 'Error al cargar datos de pasos: $e';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 }
