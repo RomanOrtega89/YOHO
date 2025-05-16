@@ -46,32 +46,33 @@ Para el análisis predictivo de la calidad del sueño y la evaluación de riesgo
 El "Sleep Health and Lifestyle Dataset" consta de 400 registros y 13 columnas, abarcando una amplia gama de variables relacionadas con el sueño y los hábitos diarios. Incluye detalles como género, edad, ocupación, duración del sueño, calidad del sueño, nivel de actividad física, niveles de estrés, categoría de IMC, presión arterial, frecuencia cardíaca, pasos diarios y la presencia o ausencia de trastornos del sueño.
 
 **Características Clave del Dataset:**
--   **Métricas Completas de Sueño:** Explora la duración del sueño, la calidad y los factores que influyen en los patrones de sueño.
--   **Factores de Estilo de Vida:** Analiza los niveles de actividad física, los niveles de estrés y las categorías de IMC.
--   **Salud Cardiovascular:** Examina las mediciones de presión arterial y frecuencia cardíaca.
--   **Análisis de Trastornos del Sueño:** Identifica la ocurrencia de trastornos del sueño como Insomnio y Apnea del Sueño.
+
+- **Métricas Completas de Sueño:** Explora la duración del sueño, la calidad y los factores que influyen en los patrones de sueño.
+- **Factores de Estilo de Vida:** Analiza los niveles de actividad física, los niveles de estrés y las categorías de IMC.
+- **Salud Cardiovascular:** Examina las mediciones de presión arterial y frecuencia cardíaca.
+- **Análisis de Trastornos del Sueño:** Identifica la ocurrencia de trastornos del sueño como Insomnio y Apnea del Sueño.
 
 **Columnas del Dataset:**
 
--   **Person ID:** Un identificador para cada individuo.
--   **Gender:** El género de la persona (Masculino/Femenino).
--   **Age:** La edad de la persona en años.
--   **Occupation:** La ocupación o profesión de la persona.
--   **Sleep Duration (hours):** El número de horas que la persona duerme por día.
--   **Quality of Sleep (scale: 1-10):** Una calificación subjetiva de la calidad del sueño, en una escala de 1 a 10.
--   **Physical Activity Level (minutes/day):** El número de minutos que la persona realiza actividad física diariamente.
--   **Stress Level (scale: 1-10):** Una calificación subjetiva del nivel de estrés experimentado por la persona, en una escala de 1 a 10.
--   **BMI Category:** La categoría de IMC de la persona (p. ej., Bajo peso, Normal, Sobrepeso).
--   **Blood Pressure (systolic/diastolic):** La medición de la presión arterial de la persona, indicada como presión sistólica sobre presión diastólica.
--   **Heart Rate (bpm):** La frecuencia cardíaca en reposo de la persona en latidos por minuto.
--   **Daily Steps:** El número de pasos que la persona da por día.
--   **Sleep Disorder:** La presencia o ausencia de un trastorno del sueño en la persona (Ninguno, Insomnio, Apnea del Sueño).
+- **Person ID:** Un identificador para cada individuo.
+- **Gender:** El género de la persona (Masculino/Femenino).
+- **Age:** La edad de la persona en años.
+- **Occupation:** La ocupación o profesión de la persona.
+- **Sleep Duration (hours):** El número de horas que la persona duerme por día.
+- **Quality of Sleep (scale: 1-10):** Una calificación subjetiva de la calidad del sueño, en una escala de 1 a 10.
+- **Physical Activity Level (minutes/day):** El número de minutos que la persona realiza actividad física diariamente.
+- **Stress Level (scale: 1-10):** Una calificación subjetiva del nivel de estrés experimentado por la persona, en una escala de 1 a 10.
+- **BMI Category:** La categoría de IMC de la persona (p. ej., Bajo peso, Normal, Sobrepeso).
+- **Blood Pressure (systolic/diastolic):** La medición de la presión arterial de la persona, indicada como presión sistólica sobre presión diastólica.
+- **Heart Rate (bpm):** La frecuencia cardíaca en reposo de la persona en latidos por minuto.
+- **Daily Steps:** El número de pasos que la persona da por día.
+- **Sleep Disorder:** La presencia o ausencia de un trastorno del sueño en la persona (Ninguno, Insomnio, Apnea del Sueño).
 
 **Detalles sobre la Columna "Sleep Disorder":**
 
--   **None:** El individuo no presenta ningún trastorno específico del sueño.
--   **Insomnia:** El individuo experimenta dificultad para conciliar el sueño o mantenerse dormido, lo que lleva a un sueño inadecuado o de mala calidad.
--   **Sleep Apnea:** El individuo sufre pausas en la respiración durante el sueño, lo que resulta en patrones de sueño interrumpidos y riesgos potenciales para la salud.
+- **None:** El individuo no presenta ningún trastorno específico del sueño.
+- **Insomnia:** El individuo experimenta dificultad para conciliar el sueño o mantenerse dormido, lo que lleva a un sueño inadecuado o de mala calidad.
+- **Sleep Apnea:** El individuo sufre pausas en la respiración durante el sueño, lo que resulta en patrones de sueño interrumpidos y riesgos potenciales para la salud.
 
 ## ⚙️ Requisitos
 
@@ -113,6 +114,7 @@ El "Sleep Health and Lifestyle Dataset" consta de 400 registros y 13 columnas, a
 
 - Román Ortega Muñoz
 - René Tellez Carmona
+- Saúl Aldhair Zapata Pérez
 
 ## 📊 Estado del proyecto
 
