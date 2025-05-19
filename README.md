@@ -115,6 +115,7 @@ El "Sleep Health and Lifestyle Dataset" consta de 400 registros y 13 columnas, a
 - Román Ortega Muñoz
 - René Tellez Carmona
 - Saúl Aldhair Zapata Pérez
+- Eduardo Jafet Ibarra Maldonado
 
 ## 📊 Estado del proyecto
 
