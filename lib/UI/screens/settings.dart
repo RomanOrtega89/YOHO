@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
 class SettingsScreen extends StatelessWidget {
@@ -177,6 +179,26 @@ class SettingsOptionsList extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
+            );
+          },
+        ),
+        SettingsItem(
+          icon: Icons.favorite, // Nuevo ícono para presión arterial
+          title: 'Presión arterial',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BloodPressurePage()),
+            );
+          },
+        ),
+        SettingsItem(
+          icon: Icons.monitor_weight, // Nuevo ícono para IMC
+          title: 'IMC',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const IMCPage()),
             );
           },
         ),
@@ -625,15 +647,336 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+// Modelo de datos para el perfil de usuario
+class UserProfile {
+  String name;
+  int age;
+  double height;
+  double weight;
+  String gender;
+
+  UserProfile({
+    required this.name,
+    required this.age,
+    required this.height,
+    required this.weight,
+    required this.gender,
+  });
+
+  // Convertir a Map para guardar en SharedPreferences
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'age': age,
+      'height': height,
+      'weight': weight,
+      'gender': gender,
+    };
+  }
+
+  // Crear desde Map (para cargar desde SharedPreferences)
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    // Manejo seguro de conversiones
+    int age = 25;
+    if (json['age'] is int) {
+      age = json['age'] as int;
+    } else if (json['age'] is String) {
+      age = int.tryParse(json['age'] as String) ?? 25;
+    }
+
+    double height = 170.0;
+    if (json['height'] is double) {
+      height = json['height'] as double;
+    } else if (json['height'] is int) {
+      height = (json['height'] as int).toDouble();
+    } else if (json['height'] is String) {
+      height = double.tryParse(json['height'] as String) ?? 170.0;
+    }
+
+    double weight = 70.0;
+    if (json['weight'] is double) {
+      weight = json['weight'] as double;
+    } else if (json['weight'] is int) {
+      weight = (json['weight'] as int).toDouble();
+    } else if (json['weight'] is String) {
+      weight = double.tryParse(json['weight'] as String) ?? 70.0;
+    }
+
+    return UserProfile(
+      name: json['name'] as String? ?? 'Usuario',
+      age: age,
+      height: height,
+      weight: weight,
+      gender: json['gender'] as String? ?? 'No especificado',
+    );
+  }
+
+  // Convertir datos para usar con TensorFlow Lite
+  // Esta función es útil incluso antes de implementar TensorFlow
+  List<double> toModelInput() {
+    // Ajusta esto según las entradas específicas que necesite tu modelo
+    List<double> modelInput = [];
+
+    // Agregar edad normalizada (suponiendo un rango de 0 a 100)
+    modelInput.add(age / 100.0);
+
+    // Agregar altura normalizada (suponiendo un rango de 0 a 250 cm)
+    modelInput.add(height / 250.0);
+
+    // Agregar peso normalizado (suponiendo un rango de 0 a 200 kg)
+    modelInput.add(weight / 200.0);
+
+    // Codificar género como valor numérico
+    double genderValue = 0.0;
+    switch (gender) {
+      case 'Masculino':
+        genderValue = 0.0;
+        break;
+      case 'Femenino':
+        genderValue = 1.0;
+        break;
+      case 'No binario':
+        genderValue = 2.0;
+        break;
+      default:
+        genderValue = 3.0;
+    }
+    modelInput.add(genderValue / 3.0); // Normalizado
+
+    return modelInput;
+  }
+}
+
+// Servicio para manejar el almacenamiento y recuperación del perfil
+class ProfileService {
+  static Future<void> saveProfile(UserProfile profile) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Guardar cada valor individualmente con su tipo adecuado
+    await prefs.setString('name', profile.name);
+    await prefs.setInt('age', profile.age);
+    await prefs.setDouble('height', profile.height);
+    await prefs.setDouble('weight', profile.weight);
+    await prefs.setString('gender', profile.gender);
+
+    try {
+      // También guardar todo el objeto como JSON para futuras extensiones
+      final jsonProfile = profile.toJson();
+      await prefs.setString('user_profile', jsonEncode(jsonProfile));
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error al guardar el perfil completo como JSON: $e');
+      // Si falla el guardado como JSON, los valores individuales ya se guardaron
+    }
+  }
+
+  static Future<UserProfile> loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Intentar cargar el perfil completo primero
+    final jsonString = prefs.getString('user_profile');
+    if (jsonString != null) {
+      try {
+        final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
+        return UserProfile.fromJson(jsonMap);
+      } catch (e) {
+        // Si hay error, usar el método de respaldo
+        // ignore: avoid_print
+        print('Error al decodificar el perfil: $e');
+      }
+    }
+
+    // Método de respaldo: cargar individualmente y hacer conversiones seguras
+    String name = prefs.getString('name') ?? 'Usuario';
+
+    // Conversión segura de strings a números
+    int age = 25;
+    try {
+      String? ageStr = prefs.getString('age');
+      if (ageStr != null) {
+        age = int.parse(ageStr);
+      } else {
+        // Intentar obtener directo como int si está guardado así
+        int? ageInt = prefs.getInt('age');
+        if (ageInt != null) age = ageInt;
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error convirtiendo edad: $e');
+    }
+
+    double height = 170.0;
+    try {
+      String? heightStr = prefs.getString('height');
+      if (heightStr != null) {
+        height = double.parse(heightStr);
+      } else {
+        // Intentar obtener directo como double si está guardado así
+        double? heightDouble = prefs.getDouble('height');
+        if (heightDouble != null) height = heightDouble;
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error convirtiendo altura: $e');
+    }
+
+    double weight = 70.0;
+    try {
+      String? weightStr = prefs.getString('weight');
+      if (weightStr != null) {
+        weight = double.parse(weightStr);
+      } else {
+        // Intentar obtener directo como double si está guardado así
+        double? weightDouble = prefs.getDouble('weight');
+        if (weightDouble != null) weight = weightDouble;
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error convirtiendo peso: $e');
+    }
+
+    String gender = prefs.getString('gender') ?? 'No especificado';
+
+    return UserProfile(
+      name: name,
+      age: age,
+      height: height,
+      weight: weight,
+      gender: gender,
+    );
+  }
+}
+
+// Servicio para integrar con TensorFlow Lite (preparado para implementación futura)
+class MLService {
+  // NOTA: Este método está preparado para implementación futura de TensorFlow Lite
+  // Actualmente devuelve datos simulados para no interrumpir el desarrollo
+  static Future<List<dynamic>> runInference(UserProfile profile) async {
+    try {
+      // Preparar los datos para el modelo (esta parte es útil y puede mantenerse)
+      final modelInput = profile.toModelInput();
+
+      // COMENTADO: Código que se activará cuando se implemente TensorFlow Lite
+      /*
+      // Para implementar en el futuro:
+      // 1. Importar la biblioteca: import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
+      // 2. Agregar el modelo .tflite a la carpeta assets/
+      // 3. Actualizar pubspec.yaml para incluir el asset
+      
+      final interpreter = await tfl.Interpreter.fromAsset('assets/your_model.tflite');
+      
+      // Configurar los tensores de entrada y salida
+      var inputShape = interpreter.getInputTensor(0).shape;
+      var outputShape = interpreter.getOutputTensor(0).shape;
+      
+      // Preparar buffer de entrada
+      var inputData = modelInput;
+      
+      // Preparar buffer de salida
+      var outputBuffer = List.filled(outputShape.reduce((a, b) => a * b), 0.0).reshape(outputShape);
+      
+      // Ejecutar la inferencia
+      interpreter.run(inputData, outputBuffer);
+      
+      // Liberar recursos
+      interpreter.close();
+      
+      return outputBuffer;
+      */
+
+      // Mientras tanto, devolver datos simulados para pruebas
+      // ignore: avoid_print
+      print('Datos preparados para ML (simulando inferencia): $modelInput');
+      return [0.75, 0.25]; // Datos simulados - ajustar según lo esperado
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error al preparar datos para ML: $e');
+      return [];
+    }
+  }
+}
+
 class _ProfilePageState extends State<ProfilePage> {
   final nameController = TextEditingController(text: 'Usuario');
   final ageController = TextEditingController(text: '25');
+  final heightController = TextEditingController(text: '170');
+  final weightController = TextEditingController(text: '70');
   String selectedGender = 'No especificado';
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfile();
+  }
+
+  Future<void> saveProfile() async {
+    // Verificar que los valores son válidos y usar valores predeterminados si no lo son
+    int age = int.tryParse(ageController.text) ?? 25;
+    double height = double.tryParse(heightController.text) ?? 170.0;
+    double weight = double.tryParse(weightController.text) ?? 70.0;
+
+    // Crear objeto de perfil desde los controladores
+    final profile = UserProfile(
+      name: nameController.text,
+      age: age,
+      height: height,
+      weight: weight,
+      gender: selectedGender,
+    );
+
+    // Guardar usando el servicio
+    await ProfileService.saveProfile(profile);
+  }
+
+  Future<void> loadProfile() async {
+    final profile = await ProfileService.loadProfile();
+
+    setState(() {
+      nameController.text = profile.name;
+      ageController.text = profile.age.toString();
+      heightController.text = profile.height.toString();
+      weightController.text = profile.weight.toString();
+      selectedGender = profile.gender;
+    });
+  }
+
+  // Método de ejemplo para usar el modelo de ML (preparado para implementación futura)
+  Future<void> runModelPrediction() async {
+    // Construir el perfil desde los datos actuales
+    final profile = UserProfile(
+      name: nameController.text,
+      age: int.tryParse(ageController.text) ?? 25,
+      height: double.tryParse(heightController.text) ?? 170.0,
+      weight: double.tryParse(weightController.text) ?? 70.0,
+      gender: selectedGender,
+    );
+
+    // Esta línea funcionará sin errores incluso sin TensorFlow implementado
+    final result = await MLService.runInference(profile);
+
+    // Hacer algo con el resultado...
+    // ignore: avoid_print
+    print('Resultado del modelo (simulado por ahora): $result');
+
+    // Ejemplo: mostrar un mensaje con los datos que se enviarían al modelo
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Datos listos para ML: Edad=${profile.age}, Altura=${profile.height}, Peso=${profile.weight}',
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
     nameController.dispose();
     ageController.dispose();
+    heightController.dispose();
+    weightController.dispose();
     super.dispose();
   }
 
@@ -675,7 +1018,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               border: OutlineInputBorder(),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 23),
                           TextFormField(
                             controller: ageController,
                             keyboardType: TextInputType.number,
@@ -685,7 +1028,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               border: OutlineInputBorder(),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 23),
                           DropdownButtonFormField<String>(
                             value: selectedGender,
                             decoration: const InputDecoration(
@@ -719,6 +1062,26 @@ class _ProfilePageState extends State<ProfilePage> {
                               }
                             },
                           ),
+                          const SizedBox(height: 23),
+                          TextFormField(
+                            controller: weightController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Peso (kg)',
+                              prefixIcon: Icon(Icons.monitor_weight),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 23),
+                          TextFormField(
+                            controller: heightController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Altura (cm)',
+                              prefixIcon: Icon(Icons.height),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -732,30 +1095,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent.withOpacity(0.8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text('Cancelar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Aquí iría la lógica para guardar el perfil
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Perfil actualizado correctamente'),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(
-                            0xFFAA5ED9,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            22,
+                            67,
+                            144,
                           ).withOpacity(0.8),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 32,
@@ -765,13 +1109,350 @@ class _ProfilePageState extends State<ProfilePage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: const Text('Guardar'),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await saveProfile();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Perfil actualizado correctamente',
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            80,
+                            29,
+                            111,
+                          ).withOpacity(0.8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
+                  // Botón para probar la preparación de datos para ML
+                  // (Descomentar cuando quieras probar la integración)
+                  /*
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: runModelPrediction,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 133, 71, 173).withOpacity(0.8),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      'Probar ML',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  */
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Página para registrar la presión arterial
+class BloodPressurePage extends StatefulWidget {
+  const BloodPressurePage({super.key});
+
+  @override
+  State<BloodPressurePage> createState() => _BloodPressurePageState();
+}
+
+class _BloodPressurePageState extends State<BloodPressurePage> {
+  List<Map<String, int>> pressures = List.generate(
+    30,
+    (_) => {'sys': 0, 'dia': 0},
+  );
+  final List<TextEditingController> sysControllers = List.generate(
+    30,
+    (_) => TextEditingController(),
+  );
+  final List<TextEditingController> diaControllers = List.generate(
+    30,
+    (_) => TextEditingController(),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    loadPressures();
+  }
+
+  Future<void> loadPressures() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('blood_pressures');
+    if (data != null) {
+      final decoded = List<Map<String, dynamic>>.from(jsonDecode(data));
+      setState(() {
+        pressures =
+            decoded
+                .map(
+                  (e) => {
+                    'sys':
+                        (e['sys'] is int)
+                            ? e['sys'] as int
+                            : int.tryParse(e['sys'].toString()) ?? 0,
+                    'dia':
+                        (e['dia'] is int)
+                            ? e['dia'] as int
+                            : int.tryParse(e['dia'].toString()) ?? 0,
+                  },
+                )
+                .toList();
+        for (int i = 0; i < 30; i++) {
+          sysControllers[i].text =
+              pressures[i]['sys'] == 0 ? '' : pressures[i]['sys'].toString();
+          diaControllers[i].text =
+              pressures[i]['dia'] == 0 ? '' : pressures[i]['dia'].toString();
+        }
+      });
+    }
+  }
+
+  Future<void> savePressures() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('blood_pressures', jsonEncode(pressures));
+  }
+
+  double get avgSys =>
+      pressures.where((e) => e['sys']! > 0).isNotEmpty
+          ? pressures
+                  .where((e) => e['sys']! > 0)
+                  .map((e) => e['sys']!)
+                  .reduce((a, b) => a + b) /
+              pressures.where((e) => e['sys']! > 0).length
+          : 0;
+  double get avgDia =>
+      pressures.where((e) => e['dia']! > 0).isNotEmpty
+          ? pressures
+                  .where((e) => e['dia']! > 0)
+                  .map((e) => e['dia']!)
+                  .reduce((a, b) => a + b) /
+              pressures.where((e) => e['dia']! > 0).length
+          : 0;
+
+  @override
+  void dispose() {
+    for (final c in sysControllers) {
+      c.dispose();
+    }
+    for (final c in diaControllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Presión arterial'),
+        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+      ),
+      body: Stack(
+        children: [
+          const Background(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const Text(
+                  'Registra tu presión arterial diaria (30 días)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.all(
+                        const Color(0xFF732A85).withOpacity(0.1),
+                      ),
+                      columns: const [
+                        DataColumn(label: Text('Día')),
+                        DataColumn(label: Text('Sistólica')),
+                        DataColumn(label: Text('Diastólica')),
+                      ],
+                      rows: List.generate(30, (i) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text('${i + 1}')),
+                            DataCell(
+                              SizedBox(
+                                width: 70,
+                                child: TextField(
+                                  controller: sysControllers[i],
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: '--',
+                                  ),
+                                  onChanged: (v) {
+                                    pressures[i]['sys'] = int.tryParse(v) ?? 0;
+                                    savePressures();
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              SizedBox(
+                                width: 70,
+                                child: TextField(
+                                  controller: diaControllers[i],
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: '--',
+                                  ),
+                                  onChanged: (v) {
+                                    pressures[i]['dia'] = int.tryParse(v) ?? 0;
+                                    savePressures();
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Promedio Sistólica: ${avgSys.toStringAsFixed(1)} mmHg',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Promedio Diastólica: ${avgDia.toStringAsFixed(1)} mmHg',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Página para mostrar el IMC
+class IMCPage extends StatelessWidget {
+  const IMCPage({super.key});
+
+  double calcularIMC(double peso, double alturaCm) {
+    final alturaM = alturaCm / 100.0;
+    if (alturaM == 0) return 0;
+    return peso / (alturaM * alturaM);
+  }
+
+  String clasificacionIMC(double imc) {
+    if (imc < 18.5) return 'Bajo peso';
+    if (imc < 25) return 'Normal';
+    if (imc < 30) return 'Sobrepeso';
+    return 'Obesidad';
+  }
+
+  Future<UserProfile> getProfile() async {
+    return await ProfileService.loadProfile();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('IMC'),
+        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+      ),
+      body: Stack(
+        children: [
+          const Background(),
+          FutureBuilder<UserProfile>(
+            future: getProfile(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final profile = snapshot.data!;
+              final imc = calcularIMC(profile.weight, profile.height);
+              final clasif = clasificacionIMC(imc);
+              return Center(
+                child: Card(
+                  color: Colors.white.withOpacity(0.9),
+                  margin: const EdgeInsets.all(32),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Tu IMC es:',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          imc.toStringAsFixed(2),
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF732A85),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Clasificación: $clasif',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Peso: ${profile.weight} kg\nAltura: ${profile.height} cm',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

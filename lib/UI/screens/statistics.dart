@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import '../../data/health_connect/health_connect.dart';
+import '../../data/health_connect/health_service.dart';
 import 'package:health/health.dart';
 import 'dart:math';
 

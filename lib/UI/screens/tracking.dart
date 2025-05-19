@@ -3,7 +3,7 @@ import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import '../../data/health_connect/health_connect.dart';
+import '../../data/health_connect/health_service.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
