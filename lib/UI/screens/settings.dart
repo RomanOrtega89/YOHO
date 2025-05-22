@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class SettingsScreenBackground extends StatelessWidget {
+  const SettingsScreenBackground({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,54 +30,7 @@ class Background extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Fondo degradado principal
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFFD4B2F8), // Morado muy claro
-                Color(0xFF5D7CEA), // Azul oscuro
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-        // Neblina suave - efectos de ondas visuales
-        Positioned(
-          top: 100,
-          left: -80,
-          child: SoftWave(color: const Color(0xFFA01AA2).withOpacity(0.05)),
-        ),
-        Positioned(
-          bottom: 0,
-          right: -60,
-          child: SoftWave(color: const Color(0xFF312290).withOpacity(0.03)),
-        ),
-        // Destellos sutiles simulando estrellas
-        ...buildStars(30),
-      ],
-    );
-  }
-
-  List<Widget> buildStars(int count) {
-    final random = Random();
-    return List.generate(count, (index) {
-      return Positioned(
-        top: random.nextDouble() * 800,
-        left: random.nextDouble() * 400,
-        child: Container(
-          width: 2,
-          height: 2,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2 + random.nextDouble() * 0.3),
-            shape: BoxShape.circle,
-          ),
-        ),
-      );
-    });
+    return Container(color: Colors.black);
   }
 }
 
@@ -103,30 +56,35 @@ class SoftWave extends StatelessWidget {
 }
 
 // Título de la sección de configuración
-class SettingsTitle extends StatelessWidget {
-  const SettingsTitle({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
-        ),
-        child: const Text(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
           'Configuración',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF732A85),
+            color: Colors.white,
           ),
-          textAlign: TextAlign.center,
         ),
+        backgroundColor: Colors.grey[900],
+        centerTitle: false,
+        elevation: 0,
+      ),
+      body: Stack(
+        children: [
+          const Background(),
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 25), // Espacio bajo el AppBar
+              child: const SettingsOptionsList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -141,7 +99,6 @@ class SettingsOptionsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SettingsTitle(),
         SettingsItem(
           icon: Icons.person_outline,
           title: 'Mi perfil',
@@ -227,7 +184,7 @@ class SettingsItem extends StatelessWidget {
       color: const Color(0xFF373954).withOpacity(0.7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.purpleAccent),
+        leading: Icon(icon, color: Colors.deepPurpleAccent),
         title: Text(
           title,
           style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -260,7 +217,7 @@ class PrivacyPolicyPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Políticas de Privacidad'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
@@ -307,116 +264,96 @@ class PrivacyPolicyPage extends StatelessWidget {
   }
 }
 
-// Página de Preguntas Frecuentes
 class FAQPage extends StatelessWidget {
   const FAQPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final faqs = [
+      {
+        'icon': Icons.track_changes,
+        'question': '¿Cómo puedo realizar un seguimiento de mi progreso?',
+        'answer':
+            'En la sección Seguimiento, puedes ver tu progreso diario y semanal. Asegúrate de registrar tus actividades regularmente para obtener estadísticas precisas.',
+      },
+      {
+        'icon': Icons.bar_chart,
+        'question': '¿Cómo se calculan las estadísticas en la aplicación?',
+        'answer':
+            'Las estadísticas se calculan en base a los datos que recopilamos a través de Health Connect. Esto incluye tus horas de sueño, fases y otros parámetros relevantes.',
+      },
+      {
+        'icon': Icons.person,
+        'question': '¿Cómo puedo actualizar mi perfil?',
+        'answer':
+            'Para actualizar tu perfil, ve a Configuraciones > Mi Perfil. Aquí puedes cambiar tu nombre, género, edad y otros datos personales.',
+      },
+      {
+        'icon': Icons.support_agent,
+        'question': '¿Cómo puedo contactar al soporte técnico?',
+        'answer':
+            'Puedes contactar al soporte técnico enviando un correo a soporte@yoho-health.com.',
+      },
+      {
+        'icon': Icons.privacy_tip,
+        'question': '¿Dónde puedo encontrar las políticas de privacidad?',
+        'answer':
+            'Las políticas de privacidad están disponibles en Configuración > Políticas de Privacidad. Aquí puedes leer sobre cómo manejamos tus datos y protegemos tu privacidad.',
+      },
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Preguntas Frecuentes'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
           const Background(),
-          SingleChildScrollView(
+          ListView.builder(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                FAQItem(
-                  icon: Icons.track_changes,
-                  question:
-                      '¿Cómo puedo realizar un seguimiento de mi progreso?',
-                  answer:
-                      'En la sección Seguimiento, puedes ver tu progreso diario y semanal. Asegúrate de registrar tus actividades regularmente para obtener estadísticas precisas.',
+            itemCount: faqs.length,
+            itemBuilder: (context, index) {
+              final faq = faqs[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                FAQItem(
-                  icon: Icons.bar_chart,
-                  question:
-                      '¿Cómo se calculan las estadísticas en la aplicación?',
-                  answer:
-                      'Las estadísticas se calculan en base a los datos que recopilamos a través de Health Connect. Esto incluye tus horas de sueño, fases y otros parámetros relevantes.',
-                ),
-                FAQItem(
-                  icon: Icons.person,
-                  question: '¿Cómo puedo actualizar mi perfil?',
-                  answer:
-                      'Para actualizar tu perfil, ve a Configuraciones > Mi Perfil. Aquí puedes cambiar tu nombre, género, edad y otros datos personales.',
-                ),
-                FAQItem(
-                  icon: Icons.support_agent,
-                  question: '¿Cómo puedo contactar al soporte técnico?',
-                  answer:
-                      'Puedes contactar al soporte técnico enviando un correo a soporte@yoho-health.com.',
-                ),
-                FAQItem(
-                  icon: Icons.privacy_tip,
-                  question:
-                      '¿Dónde puedo encontrar las políticas de privacidad?',
-                  answer:
-                      'Las políticas de privacidad están disponibles en Configuración > Políticas de Privacidad. Aquí puedes leer sobre cómo manejamos tus datos y protegemos tu privacidad.',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Elemento de pregunta frecuente
-class FAQItem extends StatelessWidget {
-  final IconData icon;
-  final String question;
-  final String answer;
-
-  const FAQItem({
-    super.key,
-    required this.icon,
-    required this.question,
-    required this.answer,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      color: Colors.white.withOpacity(0.9),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: const Color(0xFF732A85), size: 24),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    question,
+                color: Colors.grey[900],
+                child: ExpansionTile(
+                  leading: Icon(
+                    faq['icon'] as IconData,
+                    color: Colors.deepPurpleAccent,
+                  ),
+                  title: Text(
+                    faq['question'] as String,
                     style: const TextStyle(
-                      color: Color(0xFF6F1B6E),
-                      fontSize: 18,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
-                    textAlign: TextAlign.left,
                   ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        faq['answer'] as String,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              answer,
-              style: const TextStyle(color: Colors.black87, fontSize: 16),
-              textAlign: TextAlign.justify,
-            ),
-          ],
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -440,7 +377,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ajustes Generales'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
@@ -463,7 +400,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                     style: TextStyle(color: Colors.black54),
                   ),
                   value: notificationsEnabled,
-                  activeColor: const Color(0xFF732A85),
+                  activeColor: Colors.grey,
                   onChanged: (value) {
                     setState(() {
                       notificationsEnabled = value;
@@ -486,10 +423,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                     selectedTheme,
                     style: const TextStyle(color: Colors.black54),
                   ),
-                  trailing: const Icon(
-                    Icons.brightness_4,
-                    color: Color(0xFF732A85),
-                  ),
+                  trailing: const Icon(Icons.brightness_4, color: Colors.grey),
                   onTap: () {
                     showDialog(
                       context: context,
@@ -539,10 +473,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                     selectedLanguage,
                     style: const TextStyle(color: Colors.black54),
                   ),
-                  trailing: const Icon(
-                    Icons.language,
-                    color: Color(0xFF732A85),
-                  ),
+                  trailing: const Icon(Icons.language, color: Colors.grey),
                   onTap: () {
                     showDialog(
                       context: context,
@@ -592,7 +523,7 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                     'Volver a los valores predeterminados',
                     style: TextStyle(color: Colors.black54),
                   ),
-                  trailing: const Icon(Icons.restore, color: Color(0xFF732A85)),
+                  trailing: const Icon(Icons.restore, color: Colors.grey),
                   onTap: () {
                     showDialog(
                       context: context,
@@ -849,43 +780,10 @@ class ProfileService {
 
 // Servicio para integrar con TensorFlow Lite (preparado para implementación futura)
 class MLService {
-  // NOTA: Este método está preparado para implementación futura de TensorFlow Lite
-  // Actualmente devuelve datos simulados para no interrumpir el desarrollo
   static Future<List<dynamic>> runInference(UserProfile profile) async {
     try {
-      // Preparar los datos para el modelo (esta parte es útil y puede mantenerse)
       final modelInput = profile.toModelInput();
 
-      // COMENTADO: Código que se activará cuando se implemente TensorFlow Lite
-      /*
-      // Para implementar en el futuro:
-      // 1. Importar la biblioteca: import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
-      // 2. Agregar el modelo .tflite a la carpeta assets/
-      // 3. Actualizar pubspec.yaml para incluir el asset
-      
-      final interpreter = await tfl.Interpreter.fromAsset('assets/your_model.tflite');
-      
-      // Configurar los tensores de entrada y salida
-      var inputShape = interpreter.getInputTensor(0).shape;
-      var outputShape = interpreter.getOutputTensor(0).shape;
-      
-      // Preparar buffer de entrada
-      var inputData = modelInput;
-      
-      // Preparar buffer de salida
-      var outputBuffer = List.filled(outputShape.reduce((a, b) => a * b), 0.0).reshape(outputShape);
-      
-      // Ejecutar la inferencia
-      interpreter.run(inputData, outputBuffer);
-      
-      // Liberar recursos
-      interpreter.close();
-      
-      return outputBuffer;
-      */
-
-      // Mientras tanto, devolver datos simulados para pruebas
-      // ignore: avoid_print
       print('Datos preparados para ML (simulando inferencia): $modelInput');
       return [0.75, 0.25]; // Datos simulados - ajustar según lo esperado
     } catch (e) {
@@ -954,8 +852,6 @@ class _ProfilePageState extends State<ProfilePage> {
     // Esta línea funcionará sin errores incluso sin TensorFlow implementado
     final result = await MLService.runInference(profile);
 
-    // Hacer algo con el resultado...
-    // ignore: avoid_print
     print('Resultado del modelo (simulado por ahora): $result');
 
     // Ejemplo: mostrar un mensaje con los datos que se enviarían al modelo
@@ -985,7 +881,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi Perfil'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
@@ -1002,7 +898,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 24),
                   Card(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.grey[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1036,24 +932,80 @@ class _ProfilePageState extends State<ProfilePage> {
                               prefixIcon: Icon(Icons.wc),
                               border: OutlineInputBorder(),
                             ),
+                            dropdownColor: Colors.white,
                             items: const [
                               DropdownMenuItem(
                                 value: 'Masculino',
-                                child: Text('Masculino'),
+                                child: Text(
+                                  'Masculino',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'Femenino',
-                                child: Text('Femenino'),
+                                child: Text(
+                                  'Femenino',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'No binario',
-                                child: Text('No binario'),
+                                child: Text(
+                                  'No binario',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'No especificado',
-                                child: Text('No especificado'),
+                                child: Text(
+                                  'No especificado',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
                               ),
                             ],
+                            selectedItemBuilder:
+                                (context) => [
+                                  const Text(
+                                    'Masculino',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Femenino',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'No binario',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'No especificado',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
                             onChanged: (value) {
                               if (value != null) {
                                 setState(() {
@@ -1150,25 +1102,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
-                  // Botón para probar la preparación de datos para ML
-                  // (Descomentar cuando quieras probar la integración)
-                  /*
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: runModelPrediction,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 133, 71, 173).withOpacity(0.8),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'Probar ML',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  */
                 ],
               ),
             ),
@@ -1276,7 +1209,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Presión arterial'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
@@ -1294,7 +1227,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                   child: SingleChildScrollView(
                     child: DataTable(
                       headingRowColor: MaterialStateProperty.all(
-                        const Color(0xFF732A85).withOpacity(0.1),
+                        Colors.grey.shade900,
                       ),
                       columns: const [
                         DataColumn(label: Text('Día')),
@@ -1351,7 +1284,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -1402,7 +1335,7 @@ class IMCPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('IMC'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: Colors.grey[900],
       ),
       body: Stack(
         children: [
@@ -1418,7 +1351,7 @@ class IMCPage extends StatelessWidget {
               final clasif = clasificacionIMC(imc);
               return Center(
                 child: Card(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.grey[900],
                   margin: const EdgeInsets.all(32),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
@@ -1434,7 +1367,7 @@ class IMCPage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF732A85),
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 10),

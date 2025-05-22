@@ -239,21 +239,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     }
   }
 
-  void _selectPreviousWeek() {
+  void _selectPreviousWeek() async {
     if (_selectedWeekIndex < _availableWeeks.length - 1) {
       setState(() {
         _selectedWeekIndex++;
         _selectedWeekStart = _availableWeeks[_selectedWeekIndex];
       });
+      await _fetchAndProcessSleepData();
     }
   }
 
-  void _selectNextWeek() {
+  void _selectNextWeek() async {
     if (_selectedWeekIndex > 0) {
       setState(() {
         _selectedWeekIndex--;
         _selectedWeekStart = _availableWeeks[_selectedWeekIndex];
       });
+      await _fetchAndProcessSleepData();
     }
   }
 

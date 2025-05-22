@@ -29,54 +29,7 @@ class Background extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Fondo degradado principal
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFFD4B2F8), // Morado muy claro
-                Color(0xFF5D7CEA), // Azul oscuro
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-        // Neblina suave - efectos de ondas visuales
-        Positioned(
-          top: 100,
-          left: -80,
-          child: SoftWave(color: const Color(0xFFA01AA2).withOpacity(0.05)),
-        ),
-        Positioned(
-          bottom: 0,
-          right: -60,
-          child: SoftWave(color: const Color(0xFF312290).withOpacity(0.03)),
-        ),
-        // Destellos sutiles simulando estrellas
-        ...buildStars(30),
-      ],
-    );
-  }
-
-  List<Widget> buildStars(int count) {
-    final random = Random();
-    return List.generate(count, (index) {
-      return Positioned(
-        top: random.nextDouble() * 800,
-        left: random.nextDouble() * 400,
-        child: Container(
-          width: 2,
-          height: 2,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2 + random.nextDouble() * 0.3),
-            shape: BoxShape.circle,
-          ),
-        ),
-      );
-    });
+    return Container(color: Colors.black);
   }
 }
 
@@ -113,21 +66,21 @@ class TitleSection extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.grey[900],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.grey[900]!),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: const [
-            Icon(Icons.nights_stay, color: Color(0xFF732A85), size: 40),
+            Icon(Icons.nights_stay, color: Colors.white, size: 40),
             SizedBox(height: 8),
             Text(
               'Secretos para un Buen Descanso',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF732A85),
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -160,7 +113,7 @@ class CardTable extends StatelessWidget {
           children: [
             TipCard(
               imagen: 'assets/Horas_sueno.jpg',
-              color: Color(0xFF541E61),
+              color: Colors.white,
               titulo: 'Mantener un horario de sueño regular',
               detalle:
                   'Una programación consistente de la hora de acostarse y de despertarse favorece la sincronización del ritmo circadiano, reduciendo la latencia para dormir y mejorando la eficiencia del sueño. Estudios epidemiológicos y de revisión muestran asociaciones claras entre la regularidad horaria y mejores indicadores subjetivos y objetivos del sueño.',
@@ -171,7 +124,7 @@ class CardTable extends StatelessWidget {
           children: [
             TipCard(
               imagen: 'assets/Ambiente_descanso.jpg',
-              color: Color(0xFF541E61),
+              color: Colors.white,
               titulo: 'Optimizar el ambiente de descanso',
               detalle:
                   'Un entorno oscuro, silencioso y con temperatura agradable facilita la continuidad del sueño y reduce los despertares nocturnos. Revisiones muestran que el control de ruido y luz, así como el confort del colchón y la almohada, se asocian con mejoría en la calidad percibida del sueño.',
@@ -182,7 +135,7 @@ class CardTable extends StatelessWidget {
           children: [
             TipCard(
               imagen: 'assets/Evitar_estimulos.jpg',
-              color: Color(0xFF541E61),
+              color: Colors.white,
               titulo:
                   'Evitar estimulantes, alcohol y comidas pesadas antes de dormir',
               detalle:
@@ -194,7 +147,7 @@ class CardTable extends StatelessWidget {
           children: [
             TipCard(
               imagen: 'assets/Libre_pantallas.jpg',
-              color: Color(0xFF541E61),
+              color: Colors.white,
               titulo: 'Establecer una rutina relajante libre de pantallas',
               detalle:
                   'Realizar actividades tranquilas (lectura ligera, meditación, técnicas de relajación) y evitar la exposición a dispositivos electrónicos 30–60 min antes de dormir mejora la facilidad de conciliación y reduce la estimulación cortical. Revisiones apuntan al impacto negativo de la luz azul y recomiendan una transición gradual a un estado de reposo.',
@@ -205,7 +158,7 @@ class CardTable extends StatelessWidget {
           children: [
             TipCard(
               imagen: 'assets/Hacer_actividadF.png',
-              color: Color(0xFF541E61),
+              color: Colors.white,
               titulo: 'Incorporar actividad física regular',
               detalle:
                   'El ejercicio, especialmente el entrenamiento de resistencia, es una intervención eficaz para mejorar la calidad del sueño, siempre que no se realice en la ventana de 1–2 horas previas a la hora de acostarse. Un metaanálisis en red sitúa al entrenamiento de resistencia como la estrategia más beneficiosa en adultos no ancianos.',
@@ -249,7 +202,7 @@ class TipCard extends StatelessWidget {
         margin: const EdgeInsets.all(15),
         height: 190,
         decoration: BoxDecoration(
-          color: const Color(0xFF8A54A8).withOpacity(0.4),
+          border: Border.all(color: Colors.grey[900]!),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -290,7 +243,7 @@ class TipDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalles del Tip'),
-        backgroundColor: const Color(0xFFAA5ED9).withOpacity(0.6),
+        backgroundColor: (Colors.grey[900]!),
       ),
       body: Stack(
         children: [
