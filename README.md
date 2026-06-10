@@ -10,8 +10,8 @@ YOHO es una aplicación desarrollada en Flutter que se conecta con tu smartwatch
 
 - Monitorización de patrones de sueño mediante smartwatch
 - Dashboard con visualización de métricas clave
-- Análisis predictivo de calidad del sueño (en fase de implementación)
-- Evaluación de riesgos de salud basada en patrones de sueño (en fase de implementación)
+- Análisis predictivo de calidad del sueño 
+- Evaluación de riesgos de salud basada en patrones de sueño 
 - Recomendaciones personalizadas para mejorar la calidad del descanso
 - Interfaz minimalista y fácil de usar
 
@@ -115,7 +115,6 @@ El "Sleep Health and Lifestyle Dataset" consta de 4000 registros y 13 columnas, 
 - Román Ortega Muñoz
 - René Tellez Carmona
 - Saúl Aldhair Zapata Pérez
-- Eduardo Jafet Ibarra Maldonado
 
 ## 📊 Estado del proyecto
 
