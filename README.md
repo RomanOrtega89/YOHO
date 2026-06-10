@@ -43,7 +43,7 @@ Para el análisis predictivo de la calidad del sueño y la evaluación de riesgo
 **Enlace al dataset:** [Sleep Health and Lifestyle Dataset en Kaggle](https://www.kaggle.com/datasets/uom190346a/sleep-health-and-lifestyle-dataset)
 
 **Descripción General del Dataset:**
-El "Sleep Health and Lifestyle Dataset" consta de 400 registros y 13 columnas, abarcando una amplia gama de variables relacionadas con el sueño y los hábitos diarios. Incluye detalles como género, edad, ocupación, duración del sueño, calidad del sueño, nivel de actividad física, niveles de estrés, categoría de IMC, presión arterial, frecuencia cardíaca, pasos diarios y la presencia o ausencia de trastornos del sueño.
+El "Sleep Health and Lifestyle Dataset" consta de 4000 registros y 13 columnas, abarcando una amplia gama de variables relacionadas con el sueño y los hábitos diarios. Incluye detalles como género, edad, ocupación, duración del sueño, calidad del sueño, nivel de actividad física, niveles de estrés, categoría de IMC, presión arterial, frecuencia cardíaca, pasos diarios y la presencia o ausencia de trastornos del sueño.
 
 **Características Clave del Dataset:**
 
